@@ -2,6 +2,8 @@
 
 _Tool used to create the raspberrypi.org Raspbian images_
 
+_This fork creates the [Comitup](https://davesteele.github.io/comitup/) spin_
+
 
 ## Dependencies
 
