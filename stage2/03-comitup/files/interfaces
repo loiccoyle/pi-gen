@@ -15,11 +15,10 @@ iface lo inet loopback
 
 auto eth0
 allow-hotplug eth0
-iface eth0 inet dhcp
-
-auto eth0:0
-allow-hotplug eth0:0
-iface eth0:0 inet static
+iface eth0 inet static
     address 10.0.0.2/24
     dns-nameservers 8.8.8.8 4.4.4.4
 
+auto eth0:0
+allow-hotplug eth0:0
+iface eth0 inet dhcp
