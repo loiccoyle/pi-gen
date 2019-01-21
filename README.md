@@ -75,6 +75,25 @@ The following environment variables are supported:
    Setting to '1' enables the QEMU mode - creating an image that can be mounted via QEMU for an emulated
    environment. These images include "-qemu" in the image file name.
 
+ * `FIRST_USER_NAME` (Default: "pi" )
+
+   Username for the first user
+
+ * `FIRST_USER_PASS` (Default: "raspberry")
+
+   Password for the first user
+
+ * `WPA_ESSID`, `WPA_PASSWORD` and `WPA_COUNTRY` (Default: unset)
+
+   If these are set, they are use to configure `wpa_supplicant.conf`, so that the raspberry pi can automatically connect to a wifi network on first boot.
+
+ * `ENABLE_SSH` (Default: `0`)
+
+   Setting to `1` will enable ssh server for remote log in. Note that if you are using a common password such as the defaults there is a high risk of attackers taking over you RaspberryPi.
+
+ * `STAGE_LIST` (Default: `stage*`)
+
+    If set, then instead of working through the numeric stages in order, this list will be followed. For example setting to `stage0 stage1 mystage stage2` will run the contents of `mystage` before stage2. An absolute or relative path can be given for stages outside the pi-gen directory.
 
 A simple example for building Raspbian:
 
@@ -82,6 +101,13 @@ A simple example for building Raspbian:
 IMG_NAME='Raspbian'
 ```
 
+The config file can also be specified on the command line as an argument the `build.sh` or `build-docker.sh` scripts.
+
+```
+./build -c myconfig
+```
+
+This is parsed after `config` so can be used to override values set there.
 
 ## How the build process works
 
