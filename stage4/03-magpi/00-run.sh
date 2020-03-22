@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 magpi_regex="MagPi[[:digit:]]*.pdf"
-magpi_loc="$(curl -s https://magpi.raspberrypi.org/latest-pdf)"
+magpi_loc="$(wget -qO- https://magpi.raspberrypi.org/latest-pdf)"
 magpi_latest="$(echo "$magpi_loc" | grep "$magpi_regex" -m 1 -o)"
 
 if [ ! -f "files/$magpi_latest" ]; then
