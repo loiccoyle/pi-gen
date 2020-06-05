@@ -9,5 +9,6 @@ install -m 644 files/comitup.list ${ROOTFS_DIR}/etc/apt/sources.list.d/
 on_chroot apt-key add - < files/key-366150CE.pub.txt
 on_chroot << EOF
 apt-get update
+systemctl mask dnsmasq.service
 EOF
 
