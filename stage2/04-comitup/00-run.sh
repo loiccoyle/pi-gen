@@ -12,5 +12,6 @@ on_chroot apt-key add - < files/key-366150CE.pub.txt
 on_chroot << EOF
 apt-get update
 systemctl mask dnsmasq.service
+systemctl mask systemd-resolved.service
 EOF
 
