@@ -14,5 +14,6 @@ rm -f /tmp/davesteele-comitup-apt-source*deb
 apt-get update
 systemctl mask dnsmasq.service
 systemctl mask systemd-resolved.service
+systemctl mask dhcpd.service
 EOF
 
