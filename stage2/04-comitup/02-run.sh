@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+set -e
+
+rm ${ROOTFS_DIR}/etc/apt/sources.list.d/comitup.list
+on_chroot apt-key del 8A3171EF366150CE
+
 for conn in dhcp static; do
     install -m 600 files/${conn}.nmconnection ${ROOTFS_DIR}/etc/NetworkManager/system-connections/
 done
