@@ -17,17 +17,19 @@
 case "$1" in
   start)
     log_daemon_msg "Starting set_comitup_hostname_once"
+
     APNAME=$(comitup -i | grep apname: | awk '{print $2}')
     
     if [ ! -z $APNAME ] ; then
       echo "Set hostname to $APNAME"
       echo $APNAME > /etc/hostname
-      hostname #APNAME
+      hostname $APNAME
+
+      update-rc.d set_comitup_hostname_once remove &&
+      rm /etc/init.d/set_comitup_hostname_once &&
+      log_end_msg $?
     fi
 
-    update-rc.d set_comitup_hostname_once remove &&
-    rm /etc/init.d/set_comitup_hostname_once &&
-    log_end_msg $?
     ;;
   *)
     echo "Usage: $0 start" >&2
