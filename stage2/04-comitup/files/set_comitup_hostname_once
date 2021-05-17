@@ -23,6 +23,7 @@ case "$1" in
     if [ ! -z $APNAME ] ; then
       echo "Set hostname to $APNAME"
       echo $APNAME > /etc/hostname
+      echo "127.0.0.1\t$APNAME" >/etc/hosts
       hostname $APNAME
 
       update-rc.d set_comitup_hostname_once remove &&
