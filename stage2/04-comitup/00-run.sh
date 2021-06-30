@@ -16,6 +16,7 @@ apt-get update
 systemctl mask dnsmasq.service
 systemctl mask systemd-resolved.service
 systemctl mask dhcpd.service
+systemctl mask dhcpcd.service
 EOF
 
 
