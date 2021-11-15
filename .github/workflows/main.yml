@@ -1,0 +1,15 @@
+name: Trigger image build
+
+on: workflow_dispatch
+
+jobs:
+  trigger_main_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger build
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Build TinyTicker RPi image
+          repo: loiccoyle/private.actionsrunner
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repo_ref: ${{ github.ref }}
