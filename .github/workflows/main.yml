@@ -12,4 +12,5 @@ jobs:
           workflow: Build TinyTicker RPi image
           repo: loiccoyle/private.actionsrunner
           token: ${{ secrets.ACCESS_TOKEN }}
-          repo_ref: ${{ github.ref }}
+          inputs: '{ "repo_ref": "${{ github.ref }}" }'
+          ref: ${{ github.ref }}
