@@ -1,6 +1,5 @@
 python3-pip
 python3-venv
-python3-pyparsing
 libatlas-base-dev
 libopenjp2-7
 libtiff5
