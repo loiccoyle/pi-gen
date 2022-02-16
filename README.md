@@ -16,11 +16,30 @@ To install the required dependencies for `pi-gen` you should run:
 ```bash
 apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
 dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-qemu-utils kpartx
+qemu-utils kpartx gpg
 ```
 
 The file `depends` contains a list of tools needed. The format of this
 package is `<tool>[:<debian-package>]`.
+
+## Getting started with building your images
+
+Getting started is as simple as cloning this repository on your build machine. You
+can do so with:
+
+```bash
+git clone --depth 1 https://github.com/RPI-Distro/pi-gen.git
+```
+
+Using `--depth 1` with `git clone` will create a shallow clone, only containing
+the latest revision of the repository. Do not do this on your development machine.
+
+Also, be careful to clone the repository to a base path **NOT** containing spaces.
+This configuration is not supported by debootstrap and will lead to `pi-gen` not
+running.
+
+After cloning the repository, you can move to the next step and start configuring
+your build.
 
 ## Config
 
@@ -323,9 +342,9 @@ maintenance and allows for more easy customization.
   stage that installs most things that make Raspbian friendly to new
   users like system documentation.
 
-- **Stage 5** - The Raspbian Full image. More development
-  tools, an email client, learning tools like Scratch, specialized packages
-  like sonic-pi, office productivity, etc.
+ - **Stage 5** - The Raspbian Full image. More development
+   tools, an email client, learning tools like Scratch, specialized packages
+   like sonic-pi, office productivity, etc.
 
 ### Stage specification
 
