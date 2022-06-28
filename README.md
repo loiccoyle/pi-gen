@@ -16,11 +16,30 @@ To install the required dependencies for `pi-gen` you should run:
 ```bash
 apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
 dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-qemu-utils kpartx
+qemu-utils kpartx gpg pigz
 ```
 
 The file `depends` contains a list of tools needed. The format of this
 package is `<tool>[:<debian-package>]`.
+
+## Getting started with building your images
+
+Getting started is as simple as cloning this repository on your build machine. You
+can do so with:
+
+```bash
+git clone --depth 1 https://github.com/RPI-Distro/pi-gen.git
+```
+
+Using `--depth 1` with `git clone` will create a shallow clone, only containing
+the latest revision of the repository. Do not do this on your development machine.
+
+Also, be careful to clone the repository to a base path **NOT** containing spaces.
+This configuration is not supported by debootstrap and will lead to `pi-gen` not
+running.
+
+After cloning the repository, you can move to the next step and start configuring
+your build.
 
 ## Config
 
@@ -98,9 +117,28 @@ The following environment variables are supported:
 
   Output directory for target system images and NOOBS bundles.
 
-- `DEPLOY_ZIP` (Default: `1`)
+ * `DEPLOY_COMPRESSION` (Default: `zip`)
 
-  Setting to `0` will deploy the actual image (`.img`) instead of a zipped image (`.zip`).
+   Set to:
+   * `none` to deploy the actual image (`.img`).
+   * `zip` to deploy a zipped image (`.zip`).
+   * `gz` to deploy a gzipped image (`.img.gz`).
+   * `xz` to deploy a xzipped image (`.img.xz`).
+
+
+ * `DEPLOY_ZIP` (Deprecated)
+
+   This option has been deprecated in favor of `DEPLOY_COMPRESSION`.
+
+   If `DEPLOY_ZIP=0` is still present in your config file, the behavior is the
+   same as with `DEPLOY_COMPRESSION=none`.
+
+ * `COMPRESSION_LEVEL` (Default: `6`)
+
+   Compression level to be used when using `zip`, `gz` or `xz` for
+   `DEPLOY_COMPRESSION`. From 0 to 9 (refer to the tool man page for more
+   information on this. Usually 0 is no compression but very fast, up to 9 with
+   the best compression but very slow ).
 
 - `USE_QEMU` (Default: `"0"`)
 
@@ -136,15 +174,24 @@ The following environment variables are supported:
   To get the current value from a running system, look in
   `/etc/timezone`.
 
-- `FIRST_USER_NAME` (Default: "pi" )
+ * `FIRST_USER_NAME` (Default: `pi`)
 
-  Username for the first user
+   Username for the first user. This user only exists during the image creation process. Unless
+   `DISABLE_FIRST_BOOT_USER_RENAME` is set to `1`, this user will be renamed on the first boot with
+   a name chosen by the final user. This security feature is designed to prevent shipping images
+   with a default username and help prevent malicious actors from taking over your devices.
 
-- `FIRST_USER_PASS` (Default: "raspberry")
+ * `FIRST_USER_PASS` (Default: unset)
 
-  Password for the first user
+   Password for the first user. If unset, the account is locked.
 
-- `WPA_ESSID`, `WPA_PASSWORD` and `WPA_COUNTRY` (Default: unset)
+ * `DISABLE_FIRST_BOOT_USER_RENAME` (Default: `0`)
+
+   Disable the renaming of the first user during the first boot. This make it so `FIRST_USER_NAME`
+   stays activated. `FIRST_USER_PASS` must be set for this to work. Please be aware of the implied
+   security risk of defining a default username and password for your devices.
+
+ * `WPA_ESSID`, `WPA_PASSWORD` and `WPA_COUNTRY` (Default: unset)
 
   If these are set, they are use to configure `wpa_supplicant.conf`, so that the Raspberry Pi can automatically connect to a wireless network on first boot. If `WPA_ESSID` is set and `WPA_PASSWORD` is unset an unprotected wireless network will be configured. If set, `WPA_PASSWORD` must be between 8 and 63 characters.
 
@@ -323,9 +370,9 @@ maintenance and allows for more easy customization.
   stage that installs most things that make Raspbian friendly to new
   users like system documentation.
 
-- **Stage 5** - The Raspbian Full image. More development
-  tools, an email client, learning tools like Scratch, specialized packages
-  like sonic-pi, office productivity, etc.
+ - **Stage 5** - The Raspbian Full image. More development
+   tools, an email client, learning tools like Scratch, specialized packages
+   like sonic-pi, office productivity, etc.
 
 ### Stage specification
 
@@ -432,8 +479,22 @@ Now you should be able to start a new build without running into troubles again.
 # Troubleshooting
 
 ## `64 Bit Systems`
+Please note there is currently an issue when compiling with a 64 Bit OS. See
+https://github.com/RPi-Distro/pi-gen/issues/271
 
-Please note there is currently an issue when compiling with a 64 Bit OS. See https://github.com/RPi-Distro/pi-gen/issues/271
+A 64 bit image can be generated from the `arm64` branch in this repository. Just
+replace the command from [this section](#getting-started-with-building-your-images)
+by the one below, and follow the rest of the documentation:
+```bash
+git clone --depth 1 --branch arm64 https://github.com/RPI-Distro/pi-gen.git
+```
+
+If you want to generate a 64 bits image from a Raspberry Pi running a 32 bits
+version, you need to add `arm_64bit=1` to your `config.txt` file and reboot your
+machine. This will restart your machine with a 64 bits kernel. This will only
+work from a Raspberry Pi with a 64-bit capable processor (i.e. Raspberry Pi Zero
+2, Raspberry Pi 3 or Raspberry Pi 4).
+
 
 ## `binfmt_misc`
 
@@ -442,10 +503,15 @@ possible to make use of `pi-gen` on an x86_64 system, even though it will be run
 ARM binaries. This requires support from the [`binfmt_misc`](https://en.wikipedia.org/wiki/Binfmt_misc)
 kernel module.
 
-You may see the following error:
+You may see one of the following errors:
 
 ```
 update-binfmts: warning: Couldn't load the binfmt_misc module.
+```
+```
+W: Failure trying to run: chroot "/pi-gen/work/test/stage0/rootfs" /bin/true
+and/or
+chroot: failed to run command '/bin/true': Exec format error
 ```
 
 To resolve this, ensure that the following files are available (install them if necessary):
@@ -456,3 +522,5 @@ To resolve this, ensure that the following files are available (install them if 
 ```
 
 You may also need to load the module by hand - run `modprobe binfmt_misc`.
+
+If you are using WSL to build you may have to enable the service `sudo update-binfmts --enable`
