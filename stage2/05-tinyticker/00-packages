@@ -1,1 +1,7 @@
 python3-pip
+libatlas-base-dev
+libopenjp2-7
+libtiff5
+libxml2-dev
+libxslt1-dev
+
