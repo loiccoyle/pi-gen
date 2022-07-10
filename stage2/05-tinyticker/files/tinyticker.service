@@ -1,0 +1,13 @@
+[Unit]
+Description=Raspberry Pi ticker on ePaper display.
+After=networking.service
+After=tinyticker-qrcode.service
+
+[Service]
+Type=simple
+ExecStart=/home/tinyticker/.local/bin/tinyticker --config /home/tinyticker/.config/tinyticker/config.json -vv
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=default.target
