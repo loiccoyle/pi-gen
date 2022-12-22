@@ -5,9 +5,6 @@ on:
    tags:
      - '*'
  workflow_dispatch:
-   inputs:
-     tag:
-       description: The tag for which to create the image
        
 jobs:
   trigger_main_build:
@@ -30,5 +27,4 @@ jobs:
           workflow: Build TinyTicker RPi image
           repo: loiccoyle/private.actionsrunner
           token: ${{ secrets.ACCESS_TOKEN }}
-          inputs: '{ "repo_ref": "${{ steps.get_tag.outputs.tag }}" }'
           ref: refs/heads/main # https://github.com/benc-uk/workflow-dispatch/issues/11
