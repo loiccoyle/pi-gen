@@ -1,7 +1,13 @@
 python3-pip
-libatlas-base-dev
-libopenjp2-7
-libtiff5
+# lxml build deps
 libxml2-dev
 libxslt1-dev
+# Numpy build deps
+libatlas-base-dev
+ninja-build
+patchelf
+# Pillow build deps: https://pillow.readthedocs.io/en/latest/installation.html
+libopenjp2-7
+libtiff-dev
+libjpeg-dev
 
