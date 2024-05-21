@@ -8,8 +8,8 @@ Type=simple
 ExecStart=/home/tinyticker/.local/bin/tinyticker --config /home/tinyticker/.config/tinyticker/config.json -vv
 Restart=on-failure
 RestartSec=30s
-StandardOutput=file:/home/tinyticker/.local/share/tinyticker/tinyticker-out.log
-StandardError=file:/home/tinyticker/.local/share/tinyticker/tinyticker-err.log
+StandardOutput=truncate:/home/tinyticker/.local/share/tinyticker/tinyticker-out.log
+StandardError=truncate:/home/tinyticker/.local/share/tinyticker/tinyticker-err.log
 
 [Install]
 WantedBy=default.target
