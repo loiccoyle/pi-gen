@@ -8,6 +8,9 @@ _This fork creates the [Comitup](https://davesteele.github.io/comitup/) spin_
 **Note**: Raspberry Pi OS 32 bit images are based primarily on Raspbian, while
 Raspberry Pi OS 64 bit images are based primarily on Debian.
 
+**Note**: 32 bit images should be built from the `master` branch.
+64 bit images should be built from the `arm64` branch.
+
 ## Dependencies
 
 pi-gen runs on Debian-based operating systems released after 2017, and we
@@ -21,7 +24,7 @@ To install the required dependencies for `pi-gen` you should run:
 ```bash
 apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
 dosfstools libarchive-tools libcap2-bin grep rsync xz-utils file git curl bc \
-gpg pigz xxd
+gpg pigz xxd arch-test
 ```
 
 The file `depends` contains a list of tools needed.  The format of this
@@ -36,7 +39,7 @@ can do so with:
 git clone https://github.com/RPI-Distro/pi-gen.git
 ```
 
-`--depth 1` can be added afer `git clone` to create a shallow clone, only containing
+`--depth 1` can be added after `git clone` to create a shallow clone, only containing
 the latest revision of the repository. Do not do this on your development machine.
 
 Also, be careful to clone the repository to a base path **NOT** containing spaces.
@@ -54,7 +57,7 @@ environment variables.
 
 The following environment variables are supported:
 
- * `IMG_NAME` **required** (Default: unset)
+ * `IMG_NAME` (Default: `raspios-$RELEASE-$ARCH`, for example: `raspios-bookworm-armhf`)
 
    The name of the image to build with the current stage directories. Use this
    variable to set the root name of your OS, eg `IMG_NAME=Frobulator`.
@@ -65,7 +68,7 @@ The following environment variables are supported:
    The release name to use in `/etc/issue.txt`. The default should only be used
    for official Raspberry Pi builds.
 
-* `RELEASE` (Default: bookworm)
+* `RELEASE` (Default: `bookworm`)
 
    The release version to build images against. Valid values are any supported
    Debian release. However, since different releases will have different sets of
@@ -79,12 +82,6 @@ The following environment variables are supported:
    will not be included in the image, making it safe to use an `apt-cacher` or
    similar package for development.
 
-   If you have Docker installed, you can set up a local apt caching proxy to
-   like speed up subsequent builds like this:
-
-       docker-compose up -d
-       echo 'APT_PROXY=http://172.17.0.1:3142' >> config
-
  * `BASE_DIR`  (Default: location of `build.sh`)
 
    **CAUTION**: Currently, changing this value will probably break build.sh
@@ -92,7 +89,7 @@ The following environment variables are supported:
    Top-level directory for `pi-gen`.  Contains stage directories, build
    scripts, and by default both work and deployment directories.
 
- * `WORK_DIR`  (Default: `"$BASE_DIR/work"`)
+ * `WORK_DIR`  (Default: `$BASE_DIR/work`)
 
    Directory in which `pi-gen` builds the target system.  This value can be
    changed if you have a suitably large, fast storage location for stages to
@@ -102,7 +99,7 @@ The following environment variables are supported:
 
    **CAUTION**: If your working directory is on an NTFS partition you probably won't be able to build: make sure this is a proper Linux filesystem.
 
- * `DEPLOY_DIR`  (Default: `"$BASE_DIR/deploy"`)
+ * `DEPLOY_DIR`  (Default: `$BASE_DIR/deploy`)
 
    Output directory for target system images and NOOBS bundles.
 
@@ -129,20 +126,20 @@ The following environment variables are supported:
    information on this. Usually 0 is no compression but very fast, up to 9 with
    the best compression but very slow ).
 
- * `USE_QEMU` (Default: `"0"`)
+ * `USE_QEMU` (Default: `0`)
 
    Setting to '1' enables the QEMU mode - creating an image that can be mounted via QEMU for an emulated
    environment. These images include "-qemu" in the image file name.
 
- * `LOCALE_DEFAULT` (Default: "en_GB.UTF-8" )
+ * `LOCALE_DEFAULT` (Default: 'en_GB.UTF-8' )
 
    Default system locale.
 
- * `TARGET_HOSTNAME` (Default: "raspberrypi" )
+ * `TARGET_HOSTNAME` (Default: 'raspberrypi' )
 
    Setting the hostname to the specified value.
 
- * `KEYBOARD_KEYMAP` (Default: "gb" )
+ * `KEYBOARD_KEYMAP` (Default: 'gb' )
 
    Default keyboard keymap.
 
@@ -150,7 +147,7 @@ The following environment variables are supported:
    keyboard-configuration` and look at the
    `keyboard-configuration/xkb-keymap` value.
 
- * `KEYBOARD_LAYOUT` (Default: "English (UK)" )
+ * `KEYBOARD_LAYOUT` (Default: 'English (UK)' )
 
    Default keyboard layout.
 
@@ -158,9 +155,9 @@ The following environment variables are supported:
    keyboard-configuration` and look at the
    `keyboard-configuration/variant` value.
 
- * `TIMEZONE_DEFAULT` (Default: "Europe/London" )
+ * `TIMEZONE_DEFAULT` (Default: 'Europe/London' )
 
-   Default keyboard layout.
+   Default time zone.
 
    To get the current value from a running system, look in
    `/etc/timezone`.
@@ -213,6 +210,10 @@ The following environment variables are supported:
 
     If set, then instead of working through the numeric stages in order, this list will be followed. For example setting to `"stage0 stage1 mystage stage2"` will run the contents of `mystage` before stage2. Note that quotes are needed around the list. An absolute or relative path can be given for stages outside the pi-gen directory.
 
+ * `EXPORT_CONFIG_DIR` (Default: `$BASE_DIR/export-image`)
+
+    If set, use this directory path as the location of scripts to run when generating images. An absolute or relative path can be given for a location outside the pi-gen directory.
+
 A simple example for building Raspberry Pi OS:
 
 ```bash
@@ -231,12 +232,12 @@ This is parsed after `config` so can be used to override values set there.
 
 The following process is followed to build images:
 
- * Interate through all of the stage directories in alphanumeric order
+ * Iterate through all of the stage directories in alphanumeric order
 
  * Bypass a stage directory if it contains a file called
    "SKIP"
 
- * Run the script ```prerun.sh``` which is generally just used to copy the build
+ * Run the script `prerun.sh` which is generally just used to copy the build
    directory between stages.
 
  * In each stage directory iterate through each subdirectory and then run each of the
@@ -257,7 +258,7 @@ The following process is followed to build images:
        separated, per line.
 
      - **00-packages-nr** - As 00-packages, except these will be installed using
-       the ```--no-install-recommends -y``` parameters to apt-get.
+       the `--no-install-recommends -y` parameters to apt-get.
 
      - **00-patches** - A directory containing patch files to be applied, using quilt.
        If a file named 'EDIT' is present in the directory, the build process will
@@ -400,16 +401,14 @@ follows:
  * Run build.sh to build all stages
  * Add SKIP files to the earlier successfully built stages
  * Modify the last stage
- * Rebuild just the last stage using ```sudo CLEAN=1 ./build.sh```
+ * Rebuild just the last stage using `sudo CLEAN=1 ./build.sh` (or, for docker builds
+   `PRESERVE_CONTAINER=1 CONTINUE=1 CLEAN=1 ./build-docker.sh`)
  * Once you're happy with the image you can remove the SKIP_IMAGES files and
    export your image to test
 
 # Troubleshooting
 
 ## `64 Bit Systems`
-Please note there is currently an issue when compiling with a 64 Bit OS. See
-https://github.com/RPi-Distro/pi-gen/issues/271
-
 A 64 bit image can be generated from the `arm64` branch in this repository. Just
 replace the command from [this section](#getting-started-with-building-your-images)
 by the one below, and follow the rest of the documentation:
