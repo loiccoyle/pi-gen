@@ -6,6 +6,7 @@ libxslt1-dev
 libatlas-base-dev
 ninja-build
 patchelf
+libopenblas0
 # Pillow build deps: https://pillow.readthedocs.io/en/latest/installation.html
 libopenjp2-7
 libtiff-dev
